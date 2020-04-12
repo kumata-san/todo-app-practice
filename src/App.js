@@ -1,26 +1,80 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
+import ToDoListItem from "./ToDoListItem.js";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+class App extends Component {
+
+  state = {
+    todoList: JSON.parse(localStorage.getItem("todoList")) || []
+  }
+
+  addTodo = (item, callBack) => {
+    this.setState(
+      {
+        todoList: this.state.todoList.concat(item)
+      },
+      () => {
+        localStorage.setItem("todoList", JSON.stringify(this.state.todoList))
+        callBack && callBack()
+      }
+    )
+  }
+
+  removeTodo = (item, callBack) => {
+    this.setState(
+      {
+        todoList: this.state.todoList.filter(x => x !== item)
+      },
+      () => {
+        localStorage.setItem("todoList", JSON.stringify(this.state.todoList))
+        callBack && callBack()
+      }
+    )
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <form
+         className="App-form"
+         onSubmit={e => {
+           e.preventDefault();
+           const titleElement = e.target.elements["title"];
+           const descriptionElement = e.target.elements["description"];
+           this.addTodo(
+             {
+               title: titleElement.value,
+               description: descriptionElement.value
+             },
+             () => {
+               titleElement.value = "";
+               descriptionElement.value = "";
+             }
+           )
+         }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+          <div>
+            <input placeholder="title" id="title" />
+            <textarea placeholder="description" id="description" />
+          </div>
+          <div>
+            <button type="submit">登録</button>
+          </div>
+        </form>
+        <div>
+          {this.state.todoList.map(todo => (
+            <ToDoListItem
+             key = {todo.title}
+             title = {todo.title}
+             description = {todo.description}
+
+             onClick={() => this.removeTodo(todo)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
